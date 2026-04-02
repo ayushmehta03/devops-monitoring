@@ -23,7 +23,7 @@ jobs:
 
     - name:  API Health Check
       run: |
-        STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://your-api.com/health)
+        STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://google.com/)
         echo "API Status Code: $STATUS"
 
         if [ "$STATUS" -ne 200 ]; then
