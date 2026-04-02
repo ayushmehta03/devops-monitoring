@@ -3,17 +3,59 @@ name: Monitoring Demo
 on:
   push:
     branches: [ main ]
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:        # manual trigger
 
 jobs:
-  build:
+  monitor:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+    - name:  Checkout Repo
+      uses: actions/checkout@v4
 
-    - name: Run Step
-      run: echo "Pipeline running"
+    - name:  Print Timestamp
+      run: echo "Run at $(date)"
 
-    - name: Fail Step
-      run: exit 0
+    - name:  Basic Pipeline Check
+      run: echo "Pipeline is running successfully"
+
+    - name:  API Health Check
+      run: |
+        STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://your-api.com/health)
+        echo "API Status Code: $STATUS"
+
+        if [ "$STATUS" -ne 200 ]; then
+          echo "API is DOWN!"
+          exit 1
+        else
+          echo " API is healthy"
+        fi
+
+    - name:  Disk Usage Check
+      run: |
+        echo "Checking disk usage..."
+        df -h
+
+    - name:  Memory Check
+      run: |
+        echo "Checking memory..."
+        free -h
+
+    - name:  Custom Metrics Log
+      run: |
+        echo "CPU Load:"
+        uptime
+
+    - name:  Notify on Failure (Slack/Discord optional)
+      if: failure()
+      run: |
+        echo "Monitoring failed! Sending alert..."
+        # Example webhook (replace with real one)
+        # curl -X POST -H 'Content-type: application/json' \
+        # --data '{"text":"Monitoring failed!"}' YOUR_WEBHOOK_URL
+
+    - name:  Success Message
+      if: success()
+      run: echo "All monitoring checks passed "
